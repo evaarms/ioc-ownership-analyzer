@@ -1,8 +1,6 @@
 # 🛡️ IoC & Ownership Analyzer
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Focus](https://img.shields.io/badge/Focus-OSINT%20%2F%20BlueTeam-red.svg)
 
 **IoC & Ownership Analyzer** is a modular Python CLI tool designed for cybersecurity analysts, SOC operators, and Incident Responders. 
 
