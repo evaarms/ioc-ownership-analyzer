@@ -1,51 +1,100 @@
-# 🛡️ IoC & Ownership Analyzer
+# 🛡️ Advanced IoC Batch Analyzer
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
 
-**IoC & Ownership Analyzer** is a modular Python CLI tool designed for cybersecurity analysts, SOC operators, and Incident Responders. 
+Modular CLI tool designed for **Cybersecurity Blue Teams** and **OSINT Analysts**.
 
-It automates the process of **identifying**, **normalizing**, and **enriching** Indicators of Compromise (IoCs). The tool handles obfuscated URLs, distinguishes between IPs and Domains, and performs deep ownership lookups while being aware of modern privacy protections (GDPR/WhoisGuard).
+This tool allows for the **batch processing** of Indicators of Compromise (IoCs). It moves away from legacy WHOIS parsing, utilizing the modern **RDAP protocol (JSON)** and **DNSPython** for accurate, structured data extraction. It automatically cleans obfuscated indicators and resolves **all** available IPv4 and IPv6 records.
 
 ---
 
 ## Key Features
 
-* **Modular Architecture:** Clean separation of concerns between logic, networking, and user interface for easy maintenance and scalability.
-* **Smart Identification:** Automatically classifies inputs using robust Regex (IPv4, Domain, or URL) and parses hosts from complex URL structures.
-* **Auto De-obfuscation:** Detects and decodes URL-encoded strings (e.g., `%20`, `%2F`) to reveal the true target before analysis.
-* **Privacy Awareness:** explicitly detects and warns when WHOIS data is masked by **GDPR** or **Proxy Services** (e.g., "Redacted for Privacy").
-* **Network Enrichment:** Performs DNS resolution and detailed WHOIS lookups (Registrar, Creation Date, Name Servers).
-
----
-
-## Prerequisites
-
-* **Python 3.x**
-* **Internet connection (for external WHOIS/DNS queries)**
+* **Batch Queue System:** Input IoCs one by one or paste bulk lists (space-separated). The tool queues them and processes the entire batch upon the `exit` command.
+* **Modern RDAP Lookup:** Uses HTTP/JSON queries (RDAP) instead of raw port 43 WHOIS, ensuring better parsing accuracy and fewer connection errors.
+* **Full DNS Resolution:** Resolves and displays **ALL** available A (IPv4) and AAAA (IPv6) records for a domain, not just the first one.
+* **Auto De-obfuscation:** Instantly sanitizes defensive formats:
+    * `hxxp://` → `http://`
+    * `1.1.1[.]1` → `1.1.1.1`
+    * `example[.]com` → `example.com`
+* **Split-Table Reporting:** Results are intelligently separated into two clear tables: **"Domains & URLs"** and **"IP Addresses"**.
   
 ---
 
 ## Installation
 
-* **Clone the repository:**
-  ```text
-  
-  git clone [https://github.com/your-username/ioc-ownership-analyzer.git](https://github.com/your-username/ioc-ownership-analyzer.git)
-cd ioc-ownership-analyzer
+* **Python 3.x**
+* **Internet connection (for external queries)**
+* **Setup**
 
-* **Install dependencies:** This tool relies on the python-whois library.
-   ```text
-  pip install python-whois
+    * **Clone the repository:**
+      ´´´text
+      git clone [https://github.com/your-username/ioc-batch-analyzer.git](https://github.com/your-username/ioc-batch-analyzer.git)
+cd ioc-batch-analyzer
+    * **Install Dependencies:** This version relies on requests (for RDAP), dnspython (for DNS), and tabulate (for UI).
+      ´´´text
+      pip install requests dnspython tabulate
+        
+---
 
+## Usage
+
+´´´text
+python main.py
+
+* **Workflow**
+
+    * **Queue IoCs:** Paste any mix of IPs, Domains, or URLs.
+    * **Start Analysis::** Type exit (or quit) to stop adding items and process the queue.
+    * **View Results:** The tool prints two organized tables.
+
+## Example Output
+
+´´´text
+
+Enter IoCs (space-separated for multiple entries).
+Type 'exit' to start processing.
+
+IoCs> google.com 1.1.1.1
+   Total IoCs: 2
+
+IoCs> hxxps://example[.]com
+   Total IoCs: 3
+
+IoCs> exit
+
+==============================
+      FINAL RESULTS
+==============================
+
+--- DOMAINS AND URLs ---
++-----------------------+---------------+---------+----------------+------------------+------------------+-------------------+
+| Original              | De-obfuscated | Type    | A (IPv4)       | AAAA (IPv6)      | Registrar        | NS                |
++=======================+===============+=========+================+==================+==================+===================+
+| google.com            | google.com    | Domain  | 142.250.200.46 | 2a00:1450:4003:: | MarkMonitor Inc. | ns1.google.com... |
+|                       |               |         | 142.250.200.47 |                  |                  |                   |
++-----------------------+---------------+---------+----------------+------------------+------------------+-------------------+
+| hxxps://example[.]com | example.com   | URL     | 93.184.216.34  | 2606:2800:220... | RESERVED-Internet| a.iana-servers... |
++-----------------------+---------------+---------+----------------+------------------+------------------+-------------------+
+
+--- IP ADDRESSES ---
++------------+---------------+--------+---------------------+------------+---------+-----------------+
+| Original   | De-obfuscated | Type   | Range               | Org        | Country | PTR (Reverse)   |
++============+===============+========+=====================+============+=========+=================+
+| 1.1.1.1    | 1.1.1.1       | IP     | 1.1.1.0 - 1.1.1.255 | Cloudflare | AU      | one.one.one.one |
++------------+---------------+--------+---------------------+------------+---------+-----------------+
+       
 ---
 
 ## Project Structure
 
-The codebase is organized into three specific modules to ensure cleaner logic:
+The project follows a clean, modular architecture:
 
 ```text
-root/
-├── 📄 main.py            # CLI Entry Point: Handles user interaction and loop.
-├── 📄 identify_ioc.py    # Logic Module: Regex definitions, parsing, and de-obfuscation.
-├── 📄 whois_lookup.py    # Network Module: WHOIS queries, GDPR checks, and DNS resolution.
-└── 📄 requirements.txt   # Dependencies.
+ioc-analyzer/
+│
+├── 📄 main.py            # CLI Entry Point: Manages the input queue and table rendering.
+├── 📄 identify_ioc.py    # Logic Module: Regex validation, classification, and de-obfuscation.
+├── 📄 whois_lookup.py    # Network Module: RDAP client and DNS resolver.
+└── 📄 requirements.txt   # List of dependencies.
+
