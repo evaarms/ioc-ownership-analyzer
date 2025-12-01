@@ -30,10 +30,10 @@ This tool allows for the **batch processing** of Indicators of Compromise (IoCs)
     * **Clone the repository:**
 
      ```text
-ioc-analyzer/
 
       git clone [https://github.com/your-username/ioc-batch-analyzer.git](https://github.com/your-username/ioc-batch-analyzer.git)
 cd ioc-batch-analyzer
+
     * **Install Dependencies:** This version relies on requests (for RDAP), dnspython (for DNS), and tabulate (for UI).
       
       ´´´text
@@ -44,7 +44,6 @@ cd ioc-batch-analyzer
 ## Usage
 
 ```text
-ioc-analyzer/
 
 python main.py
 
@@ -57,7 +56,6 @@ python main.py
 ## Example Output
 
 ```text
-ioc-analyzer/
 
 Enter IoCs (space-separated for multiple entries).
 Type 'exit' to start processing.
