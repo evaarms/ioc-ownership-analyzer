@@ -14,7 +14,29 @@ It automates the process of **identifying**, **normalizing**, and **enriching** 
 * **Smart Identification:** Automatically classifies inputs using robust Regex (IPv4, Domain, or URL) and parses hosts from complex URL structures.
 * **Auto De-obfuscation:** Detects and decodes URL-encoded strings (e.g., `%20`, `%2F`) to reveal the true target before analysis.
 * **Privacy Awareness:** explicitly detects and warns when WHOIS data is masked by **GDPR** or **Proxy Services** (e.g., "Redacted for Privacy").
-* **🌐 Network Enrichment:** Performs DNS resolution and detailed WHOIS lookups (Registrar, Creation Date, Name Servers).
+* **Network Enrichment:** Performs DNS resolution and detailed WHOIS lookups (Registrar, Creation Date, Name Servers).
+
+---
+
+## Prerequisites
+
+* **Python 3.x**
+* **Internet connection (for external WHOIS/DNS queries)**
+  
+---
+
+## Installation
+
+* **Clone the repository:**
+  ```text
+  root/
+  git clone [https://github.com/your-username/ioc-ownership-analyzer.git](https://github.com/your-username/ioc-ownership-analyzer.git)
+cd ioc-ownership-analyzer
+
+* **Install dependencies:** This tool relies on the python-whois library.
+   ```text
+  root/
+  pip install python-whois
 
 ---
 
