@@ -38,8 +38,20 @@ This tool allows for the **batch processing** of Indicators of Compromise (IoCs)
       
       ´´´text
       pip install requests dnspython tabulate
-        
+            
 ---
+## Project Structure
+
+The project follows a clean, modular architecture:
+
+```text
+ioc-analyzer/
+│
+├── 📄 main.py            # CLI Entry Point: Manages the input queue and table rendering.
+├── 📄 identify_ioc.py    # Logic Module: Regex validation, classification, and de-obfuscation.
+├── 📄 whois_lookup.py    # Network Module: RDAP client and DNS resolver.
+└── 📄 requirements.txt   # List of dependencies.
+___
 
 ## Usage
 
@@ -53,20 +65,6 @@ python main.py
     * **Start Analysis::** Type exit (or quit) to stop adding items and process the queue.
     * **View Results:** The tool prints two organized tables.
 ´´´
-
----
-
-## Project Structure
-
-The project follows a clean, modular architecture:
-
-```text
-ioc-analyzer/
-│
-├── 📄 main.py            # CLI Entry Point: Manages the input queue and table rendering.
-├── 📄 identify_ioc.py    # Logic Module: Regex validation, classification, and de-obfuscation.
-├── 📄 whois_lookup.py    # Network Module: RDAP client and DNS resolver.
-└── 📄 requirements.txt   # List of dependencies.
 
 ---
 
