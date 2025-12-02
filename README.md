@@ -29,14 +29,12 @@ This tool allows for the **batch processing** of Indicators of Compromise (IoCs)
 
     * **Clone the repository:**
 
-     ```text
-
-      git clone [https://github.com/your-username/ioc-batch-analyzer.git](https://github.com/your-username/ioc-batch-analyzer.git)cd ioc-batch-analyzer
+      git clone [https://github.com/your-username/ioc-batch-analyzer.git](https://github.com/your-username/ioc-batch-analyzer.git)
+     cd ioc-batch-analyzer
 
 
     * **Install Dependencies:** This version relies on requests (for RDAP), dnspython (for DNS), and tabulate (for UI).
       
-      ´´´text
       pip install requests dnspython tabulate
             
 ---
