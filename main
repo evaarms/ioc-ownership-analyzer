@@ -1,0 +1,106 @@
+from urllib.parse import urlparse
+from tabulate import tabulate
+from identify_ioc import classify_ioc
+from whois_lookup import resolve_dns, query_rdap
+
+def main():
+    print("Enter IoCs (space-separated for multiple entries).")
+    print("Type 'exit' to start processing.")
+
+    ioc_queue = []
+
+    while True:
+        user_input = input("\nIoCs> ").strip()
+        # Check exit condition
+        if user_input.lower() in ["exit", "quit"]:
+            break
+        # Skip empty input
+        if not user_input:
+            continue
+        # Split by spaces and add to queue
+        new_iocs = [ioc.strip() for ioc in user_input.split() if ioc.strip()]
+        ioc_queue.extend(new_iocs)
+        print(f"Total Iocs: {len(ioc_queue)}")
+
+    if not ioc_queue:
+        print("\nNo IoCs provided. Exiting.")
+        return
+
+    final_table = []
+
+    for ioc in ioc_queue:
+        clean_ioc, ioc_type = classify_ioc(ioc)
+
+        # Domain or URL
+        if ioc_type in ["Domain", "URL"]:
+            host = urlparse(clean_ioc).netloc.split(":")[0] if ioc_type == "URL" else clean_ioc
+
+            # Network Queries
+            dns_res = resolve_dns(host, "Domain")
+            rdap_info = query_rdap(clean_ioc, ioc_type)
+
+            final_table.append([
+                ioc,
+                clean_ioc,
+                ioc_type,
+                "\n".join(dns_res["A"]) or "N/A",  # SHOW ALL IPv4
+                "\n".join(dns_res["AAAA"]) or "N/A",  # SHOW ALL IPv6
+                rdap_info.get("Handle"),
+                rdap_info.get("Creation Date"),
+                rdap_info.get("Expiration Date"),
+                rdap_info.get("Registrar"),
+                rdap_info.get("DNS Servers")
+            ])
+
+        # IP Address
+        elif ioc_type == "IP":
+            ip_query = clean_ioc.split(":")[0] if ":" in clean_ioc else clean_ioc
+
+            # Network Queries
+            dns_res = resolve_dns(ip_query, "IP")
+            rdap_info = query_rdap(clean_ioc, ioc_type)
+
+            final_table.append([
+                ioc,
+                clean_ioc,
+                ioc_type,
+                rdap_info.get("Range"),
+                rdap_info.get("Organization"),
+                rdap_info.get("Country"),
+                "\n".join(dns_res["PTR"]) or "N/A"  # SHOW ALL PTR
+            ])
+
+        # Unknown
+        else:
+            final_table.append([ioc, clean_ioc, ioc_type, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"])
+
+    # --- DISPLAY TABLES ---
+
+    # Filter rows based on type
+    domain_rows = [r for r in final_table if r[2] in ["Domain", "URL"]]
+    ip_rows = [r for r in final_table if r[2] == "IP"]
+
+    print("\n" + "=" * 30)
+    print("      FINAL RESULTS")
+    print("=" * 30)
+
+    # Domains
+    if domain_rows:
+        headers_dom = ["Original", "De-obfuscated", "Type", "A (IPv4)", "AAAA (IPv6)",
+                       "Handle", "Creation", "Expiration",
+                       "Registrar", "NS"]
+        print("\n--- DOMAINS AND URLs ---")
+        print(tabulate(domain_rows, headers=headers_dom, tablefmt="grid"))
+
+    # IPs
+    if ip_rows:
+        headers_ip = ["Original", "De-obfuscated", "Type",
+                      "Range", "Org", "Country", "PTR (Reverse)"]
+        print("\n--- IP ADDRESSES ---")
+        print(tabulate(ip_rows, headers=headers_ip, tablefmt="grid"))
+
+    print("\nAnalysis finished.")
+
+
+if __name__ == "__main__":
+    main()
