@@ -48,7 +48,7 @@ ioc-analyzer/
 ├── 📄 main.py            # CLI Entry Point: Manages the input queue and table rendering.
 ├── 📄 identify_ioc.py    # Logic Module: Regex validation, classification, and de-obfuscation.
 ├── 📄 whois_lookup.py    # Network Module: RDAP client and DNS resolver.
-└── 📄 requirements.txt   # List of dependencies.
+
 ___
 
 ## Usage
