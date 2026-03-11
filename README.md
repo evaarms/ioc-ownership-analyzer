@@ -1,53 +1,118 @@
-# 🛡️ Advanced IoC Batch Analyzer
+# 🔍 IOC Analyzer
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
-
-Modular CLI tool designed for **Cybersecurity Blue Teams** and **OSINT Analysts**.
-
-This tool allows for the **batch processing** of Indicators of Compromise (IoCs). It moves away from legacy WHOIS parsing, utilizing the modern **RDAP protocol (JSON)** and **DNSPython** for accurate, structured data extraction. It automatically cleans obfuscated indicators and resolves **all** available IPv4 and IPv6 records.
+A command-line tool for analyzing **Indicators of Compromise (IoCs)** — including IPs, domains, and URLs. It automatically de-obfuscates common threat-intel formats, classifies each indicator, and enriches them with DNS and RDAP/WHOIS data.
 
 ---
 
-## Key Features
+## Features
 
-* **Batch Queue System:** Input IoCs one by one or paste bulk lists (space-separated). The tool queues them and processes the entire batch upon the `exit` command.
-* **Modern RDAP Lookup:** Uses HTTP/JSON queries (RDAP) instead of raw port 43 WHOIS, ensuring better parsing accuracy and fewer connection errors.
-* **Full DNS Resolution:** Resolves and displays **ALL** available A (IPv4) and AAAA (IPv6) records for a domain, not just the first one.
-* **Auto De-obfuscation:** Instantly sanitizes defensive formats:
-    * `hxxp://` → `http://`
-    * `1.1.1[.]1` → `1.1.1.1`
-    * `example[.]com` → `example.com`
-* **Split-Table Reporting:** Results are intelligently separated into two clear tables: **"Domains & URLs"** and **"IP Addresses"**.
-  
+- **De-obfuscation** — handles `hxxp`, `[.]`, `[:]`, `dot`, and URL encoding automatically
+- **IOC Classification** — detects and categorizes IPs (v4/v6), URLs, and Domains
+- **DNS Resolution** — resolves A, AAAA, and PTR records
+- **RDAP/WHOIS Enrichment** — retrieves registration data (registrar, creation/expiration dates, nameservers, ASN/org/country for IPs)
+- **Formatted Output** — results displayed in clean, grid-style tables grouped by IOC type
+
+---
+
+## Project Structure
+
+```
+.
+├── main.py            # Entry point — handles user input and displays results
+├── identify_ioc.py    # IOC parsing, de-obfuscation, and classification logic
+└── whois_lookup.py    # DNS resolution and RDAP query functions
+```
+
 ---
 
 ## Installation
 
-* **Python 3.x**
-* **Internet connection (for external queries)**
-* **Setup**
+```bash
+git clone https://github.com/your-username/ioc-analyzer.git
+cd ioc-analyzer
+pip install tabulate
+```
 
-    * **Clone the repository:**
+> No other external dependencies required — uses Python's built-in `ipaddress`, `urllib`, and `re` modules.
 
-      git clone [https://github.com/your-username/ioc-batch-analyzer.git](https://github.com/your-username/ioc-batch-analyzer.git)
-     cd ioc-batch-analyzer
-
-
-    * **Install Dependencies:** This version relies on requests (for RDAP), dnspython (for DNS), and tabulate (for UI).
-      
-      pip install requests dnspython tabulate
-            
 ---
-## Project Structure
 
-The project follows a clean, modular architecture:
+## Usage
 
-```text
-ioc-analyzer/
-│
-├── 📄 main.py            # CLI Entry Point: Manages the input queue and table rendering.
-├── 📄 identify_ioc.py    # Logic Module: Regex validation, classification, and de-obfuscation.
-├── 📄 whois_lookup.py    # Network Module: RDAP client and DNS resolver.
+```bash
+python main.py
+```
+
+Enter one or more IOCs (space-separated). Type `exit` when done to trigger analysis.
+
+```
+Enter IoCs (space-separated for multiple entries).
+Type 'exit' to start processing.
+
+IoCs> 8.8.8.8 hxxps://evil[.]example[.]com 192.168.1[.]1:8080
+Total Iocs: 3
+
+IoCs> exit
+```
+
+### Example Output
+
+```
+==============================
+      FINAL RESULTS
+==============================
+
+--- DOMAINS AND URLs ---
++----------------------+---------------------------+------+----------+-------------+--------+------------+------------+-----------+----+
+| Original             | De-obfuscated             | Type | A (IPv4) | AAAA (IPv6) | Handle | Creation   | Expiration | Registrar | NS |
++----------------------+---------------------------+------+----------+-------------+--------+------------+------------+-----------+----+
+| hxxps://evil[.]ex... | https://evil.example.com  | URL  | 1.2.3.4  | N/A         | ...    | 2020-01-01 | 2026-01-01 | GoDaddy   | .. |
++----------------------+---------------------------+------+----------+-------------+--------+------------+------------+-----------+----+
+
+--- IP ADDRESSES ---
++-------------+---------------+------+----------------+----------+---------+---------------+
+| Original    | De-obfuscated | Type | Range          | Org      | Country | PTR (Reverse) |
++-------------+---------------+------+----------------+----------+---------+---------------+
+| 8.8.8.8     | 8.8.8.8       | IP   | 8.8.8.0/24     | Google   | US      | dns.google    |
++-------------+---------------+------+----------------+----------+---------+---------------+
+```
+
+---
+
+## Supported Obfuscation Formats
+
+| Obfuscated        | Resolved              |
+|-------------------|-----------------------|
+| `hxxp://...`      | `http://...`          |
+| `hxxps://...`     | `https://...`         |
+| `evil[.]com`      | `evil.com`            |
+| `host[:]8080`     | `host:8080`           |
+| `evil dot com`    | `evil.com`            |
+| `%2F`, `%3A` etc. | URL-decoded           |
+
+---
+
+## IOC Classification Logic
+
+Classification follows a strict priority order to avoid ambiguity:
+
+1. **IP** — validated as IPv4 or IPv6 (with optional port handling)
+2. **URL** — must have `http`/`https` scheme and a valid host
+3. **Domain** — strict label validation (no numeric TLDs, RFC-compliant labels)
+4. **Unknown** — anything that doesn't match the above
+
+---
+
+## Requirements
+
+- Python 3.8+
+- [`tabulate`](https://pypi.org/project/tabulate/) — for table rendering
+
+---
+
+## License
+
+MIT License. See `LICENSE` for details.
 
 ___
 
